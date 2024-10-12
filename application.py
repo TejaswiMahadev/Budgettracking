@@ -86,7 +86,7 @@ def main():
     st.sidebar.header("NAVIGATION")
     with st.sidebar.expander("Menu",expanded=True):
 
-        page = option_menu(menu_title="Navigation",options=["Lander","Home","Budget Tracking","Predictions","Visualizations"],icons=["house","person","list","bar-chart","pie-chart"],menu_icon="cast",default_index=0)
+        page = option_menu(menu_title="Navigation",options=["Lander","Budget Tracking","Predictions","Visualizations"],icons=["house","list","bar-chart","pie-chart"],menu_icon="cast",default_index=0)
 
     if page == "Lander":
         st.title("SWIFT")
@@ -100,171 +100,127 @@ def main():
                                                                   "Insightful Reports: Gain valuable insights into your spending patterns with detailed reports and analytics. Identify areas for improvement, track trends over time, and make smarter financial decisions."],icons=["diamond","diamond","diamond"],default_index=0)
         st.header("Ready to take control of your finances?")
         st.header("Get started now!")
-        st.subheader("Navigate to the Sidebar pleasee!")
-    if page == "Home":
-        st.header("Welcome to SWIFT - Budget Tracking and Analysis App")
-        st.subheader("Log In or Sign Up")
-        select_mode = option_menu(menu_title=None,options=["Log In", "Sign up"])
-
-        if select_mode == "Log In":
-            user_login = st.text_input("Username")
-            pass_login = st.text_input("Password",type="password")
-            if st.button("Log In"):
-                if user_login and pass_login:
-                    user = login(user_login,pass_login)
-                    if user:
-                        st.success(f"Logged in as {user_login}")
-                        st.info("Redirecting.....")
-                        st.experimental_set_query_params()
-                    else:
-                        st.error("Invalid username or password")
-                else:
-                    st.warning("Please enter both username and password")
-        else:
-            user_sign = st.text_input("Username")
-            password_sign = st.text_input("Password",type="password")
-            if st.button("Sign Up"):
-                if user_sign and password_sign:
-                    register(user_sign,password_sign)
-                    st.success("Account created successfully")
-                else:
-                    st.warning("Please enter both username and password")
+        st.subheader("Navigate to the Sidebar pleasee!)
 
 
     if page == "Budget Tracking":
-        if st.session_state['logged_in']:
-            selected = option_menu(menu_title=None, options=["Add expense", "View expenses", "Visualise expenses"])
+        selected = option_menu(menu_title=None, options=["Add expense", "View expenses", "Visualise expenses"])
 
-            if selected == "Add expense":
-                st.title("Add your expenses")
-                category = st.radio("Categories", ["Housing", "Transportation", "Foodandgroceries", "Healthcare", "PersonalandLifestyle", "DebtandSavings"])
-                #budget = st.number_input("Enter your budget",min_value=0.01,step=0.01)
-                expense_name = st.text_input("Expense Name", "")
-                amount = st.number_input("Amount", min_value=0.01, step=0.01)
-                description = st.text_area("Description", "")
+        if selected == "Add expense":
+            st.title("Add your expenses")
+            category = st.radio("Categories", ["Housing", "Transportation", "Foodandgroceries", "Healthcare", "PersonalandLifestyle", "DebtandSavings"])
+            #budget = st.number_input("Enter your budget",min_value=0.01,step=0.01)
+            expense_name = st.text_input("Expense Name", "")
+            amount = st.number_input("Amount", min_value=0.01, step=0.01)
+            description = st.text_area("Description", "")
 
-                if st.button("Add"):
-                    add_expense(expense_name, category, amount)
-                    st.success("Transaction added successfully!")
+            if st.button("Add"):
+                add_expense(expense_name, category, amount)
+                st.success("Transaction added successfully!")
 
-            elif selected == "View expenses":
-                st.title("View your expenses")
-                df = load_transactions()
-                st.write("Expense Data : ")
-                st.write(df)
-                if df.empty:
-                    st.write("No transactions recorded yet")
-                else:
-                    st.download_button(label="Download as CSV",data=convert_df_to_csv(df),file_name='expense_data.csv',mime='text/csv')
-            elif selected == "Visualise expenses":
-                transactions = load_transactions()
-                if transactions.empty:
-                    st.error("No transactions recorded yet.")
-                else:
-                    #transactions_df = pd.DataFrame(transactions, columns=["ID", "Name", "Category", "Amount", "Date"])
-                    transactions_df = load_transactions()
-                    category_totals = transactions_df.groupby("category")["amount"].sum()
+        elif selected == "View expenses":
+            st.title("View your expenses")
+            df = load_transactions()
+            st.write("Expense Data : ")
+            st.write(df)
+            if df.empty:
+                st.write("No transactions recorded yet")
+            else:
+                st.download_button(label="Download as CSV",data=convert_df_to_csv(df),file_name='expense_data.csv',mime='text/csv')
+        elif selected == "Visualise expenses":
+            transactions = load_transactions()
+            if transactions.empty:
+                st.error("No transactions recorded yet.")
+            else:
+                #transactions_df = pd.DataFrame(transactions, columns=["ID", "Name", "Category", "Amount", "Date"])
+                transactions_df = load_transactions()
+                category_totals = transactions_df.groupby("category")["amount"].sum()
 
-                    st.subheader("Expense Distribution by Category")
-                    fig_pie = px.pie(category_totals, values=category_totals.values, names=category_totals.index)
-                    st.plotly_chart(fig_pie, use_container_width=True)
+                st.subheader("Expense Distribution by Category")
+                fig_pie = px.pie(category_totals, values=category_totals.values, names=category_totals.index)
+                st.plotly_chart(fig_pie, use_container_width=True)
 
-                    transactions_df["Day"] = pd.to_datetime(transactions_df["date"]).dt.date
-                    daily_totals = transactions_df.groupby("Day")["amount"].sum()
+                transactions_df["Day"] = pd.to_datetime(transactions_df["date"]).dt.date
+                daily_totals = transactions_df.groupby("Day")["amount"].sum()
 
-                    st.subheader("Daily Expenses")
-                    daily_df = daily_totals.reset_index()
-                    daily_df["Day"] = daily_df["Day"].astype(str)
-                    fig_bar = px.bar(daily_df, x="Day", y="amount", labels={'Amount':'Total Expense'})
-                    fig_bar.update_xaxes(title_text='Day')
-                    fig_bar.update_yaxes(title_text='Total Expense')
-                    st.plotly_chart(fig_bar, use_container_width=True)
-
-        else:
-            st.error("Please log in to access this page")
+                st.subheader("Daily Expenses")
+                daily_df = daily_totals.reset_index()
+                daily_df["Day"] = daily_df["Day"].astype(str)
+                fig_bar = px.bar(daily_df, x="Day", y="amount", labels={'Amount':'Total Expense'})
+                fig_bar.update_xaxes(title_text='Day')
+                fig_bar.update_yaxes(title_text='Total Expense')
+                st.plotly_chart(fig_bar, use_container_width=True)
 
     elif page == "Predictions":
-        if st.session_state['logged_in']:
-            transactions_df = load_transactions()
-            st.header("Future Predictions")
-            st.write("Enter the category and amount for future prediction:")
-            category_input = st.selectbox("category", ["Housing", "Transportation", "Foodandgroceries", "Healthcare", "PersonalandLifestyle", "DebtandSavings"])
-            #amount_input = st.number_input("amount", min_value=0.01, step=0.01)
+        transactions_df = load_transactions()
+        st.header("Future Predictions")
+        st.write("Enter the category and amount for future prediction:")
+        category_input = st.selectbox("category", ["Housing", "Transportation", "Foodandgroceries", "Healthcare", "PersonalandLifestyle", "DebtandSavings"])
+        #amount_input = st.number_input("amount", min_value=0.01, step=0.01)
 
-            if st.button("Predict"):
-                existing_dates, preds_e, future_dates, preds_f = predict_expenses(category_input)
-                fig = go.Figure()
-                existing_daily_totals = transactions_df[transactions_df['category'] == category_input].groupby(pd.to_datetime(transactions_df["date"]).dt.date)["amount"].sum()
-                fig.add_trace(go.Scatter(x=existing_dates,
+        if st.button("Predict"):
+            existing_dates, preds_e, future_dates, preds_f = predict_expenses(category_input)
+            fig = go.Figure()
+            existing_daily_totals = transactions_df[transactions_df['category'] == category_input].groupby(pd.to_datetime(transactions_df["date"]).dt.date)["amount"].sum()
+            fig.add_trace(go.Scatter(x=existing_dates,
                                          y=existing_daily_totals,
                                          mode='markers',
                                          name='Existing Expenses'))
-                fig.add_trace(go.Scatter(x=np.concatenate((existing_dates, future_dates)),
+            fig.add_trace(go.Scatter(x=np.concatenate((existing_dates, future_dates)),
                                      y=np.concatenate((preds_e, preds_f)),
                                      mode='lines', name='Predicted Expenses'))
 
-                fig.update_layout(title='Expense Prediction',
+            fig.update_layout(title='Expense Prediction',
                       xaxis_title='Date',
                       yaxis_title='Expense Amount',
                       showlegend=True)
-                future_dates1 = [dt.date() for dt in future_dates]
-                future_data = {'Date': future_dates1, 'Predicted Expense': preds_f}
-                future_df = pd.DataFrame(future_data)
+            future_dates1 = [dt.date() for dt in future_dates]
+            future_data = {'Date': future_dates1, 'Predicted Expense': preds_f}
+            future_df = pd.DataFrame(future_data)
                 
-                st.write("Future Predicted Expenses :")
-                st.write(future_df)
-                st.plotly_chart(fig)
-                
-                
-
-        else:
-            st.error("Please log in to access this page")
-            
-    elif page == "Visualizations":
-        if st.session_state['logged_in']:
-            st.header("Visualizations")
-            expenses_df = load_transactions()
-            opt = st.selectbox("Cluster by", ["Categories", "Dates", "Amount"])
-            expenses_df['l'] = le().fit_transform(expenses_df['category'])
-            expenses_df['dl'] = le().fit_transform(expenses_df['date'])
-
-            if opt == "Categories":
-                features = ['l']
-            
-            elif opt == "Dates":
-                features = ['dl']
-                
-            elif opt == "Amount":
-                features = ['amount']
-
-            X = expenses_df[features]
-
-            kmeans = KMeans(n_clusters=6)  
-            clusters = kmeans.fit_predict(X)
-            expenses_df['cluster'] = clusters
-
-            custom_color_scale = px.colors.qualitative.Plotly
-            if opt == "Categories":
-                fig = px.scatter(x=expenses_df['id'], y=expenses_df['category'], color=clusters,color_continuous_scale=custom_color_scale, title="Clustering by Categories")
-                fig.update_yaxes(title=opt)
-
-            elif opt == "Dates":
-                fig = px.scatter(x=expenses_df['id'], y=expenses_df['date'], color=clusters,color_continuous_scale=custom_color_scale, title="Clustering by Dates")
-                fig.update_yaxes(title=opt)
-            elif opt == "Amount":
-                fig = px.scatter(x=expenses_df['id'], y=expenses_df['amount'], color=clusters,color_continuous_scale=custom_color_scale, title="Clustering by Amount")
-                fig.update_yaxes(title=opt)
-            
-            fig.update_xaxes(title="Entry ID")
-            fig.update_layout(showlegend=False)
-
-            st.write(expenses_df[['id','name','category','amount','date','cluster']])
+            st.write("Future Predicted Expenses :")
+            st.write(future_df)
             st.plotly_chart(fig)
             
+    elif page == "Visualizations":
+        st.header("Visualizations")
+        expenses_df = load_transactions()
+        opt = st.selectbox("Cluster by", ["Categories", "Dates", "Amount"])
+        expenses_df['l'] = le().fit_transform(expenses_df['category'])
+        expenses_df['dl'] = le().fit_transform(expenses_df['date'])
 
+        if opt == "Categories":
+            features = ['l']
             
-        else:
-            st.error("Please log in to access this page")
+        elif opt == "Dates":
+            features = ['dl']
+                
+        elif opt == "Amount":
+            features = ['amount']
+
+        X = expenses_df[features]
+
+        kmeans = KMeans(n_clusters=6)  
+        clusters = kmeans.fit_predict(X)
+        expenses_df['cluster'] = clusters
+
+        custom_color_scale = px.colors.qualitative.Plotly
+        if opt == "Categories":
+            fig = px.scatter(x=expenses_df['id'], y=expenses_df['category'], color=clusters,color_continuous_scale=custom_color_scale, title="Clustering by Categories")
+            fig.update_yaxes(title=opt)
+
+         elif opt == "Dates":
+            fig = px.scatter(x=expenses_df['id'], y=expenses_df['date'], color=clusters,color_continuous_scale=custom_color_scale, title="Clustering by Dates")
+            fig.update_yaxes(title=opt)
+        elif opt == "Amount":
+            fig = px.scatter(x=expenses_df['id'], y=expenses_df['amount'], color=clusters,color_continuous_scale=custom_color_scale, title="Clustering by Amount")
+            fig.update_yaxes(title=opt)
+            
+        fig.update_xaxes(title="Entry ID")
+        fig.update_layout(showlegend=False)
+
+        st.write(expenses_df[['id','name','category','amount','date','cluster']])
+        st.plotly_chart(fig)
 
 def add_expense(expense_name,category,amount):
     #add expense code
