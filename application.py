@@ -188,13 +188,10 @@ def main():
         opt = st.selectbox("Cluster by", ["Categories", "Dates", "Amount"])
         expenses_df['l'] = le().fit_transform(expenses_df['category'])
         expenses_df['dl'] = le().fit_transform(expenses_df['date'])
-
         if opt == "Categories":
             features = ['l']
-            
         elif opt == "Dates":
             features = ['dl']
-                
         elif opt == "Amount":
             features = ['amount']
 
