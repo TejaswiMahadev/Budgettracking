@@ -100,7 +100,7 @@ def main():
                                                                   "Insightful Reports: Gain valuable insights into your spending patterns with detailed reports and analytics. Identify areas for improvement, track trends over time, and make smarter financial decisions."],icons=["diamond","diamond","diamond"],default_index=0)
         st.header("Ready to take control of your finances?")
         st.header("Get started now!")
-        st.subheader("Navigate to the Sidebar pleasee!)
+        st.subheader("Navigate to the Sidebar pleasee!")
 
 
     if page == "Budget Tracking":
