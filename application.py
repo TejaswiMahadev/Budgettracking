@@ -115,7 +115,7 @@ def main():
                     if user:
                         st.success(f"Logged in as {user_login}")
                         st.info("Redirecting.....")
-                        st.rerun()
+                        st.experimental_set_query_params()
                     else:
                         st.error("Invalid username or password")
                 else:
