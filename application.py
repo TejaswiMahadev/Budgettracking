@@ -127,7 +127,7 @@ def main():
             fig.add_trace(go.Scatter(x=np.concatenate((existing_dates, future_dates)), y=np.concatenate((preds_e, preds_f)), mode='lines', name='Predicted Expenses'))
 
             fig.update_layout(title='Expense Prediction', xaxis_title='Date', yaxis_title='Expense Amount', showlegend=True)
-            future_dates1 = [dt.date() for dt in future_dates]
+            future_dates1 = [pd.Timestamp(dt).date() for dt in future_dates]
             future_data = {'Date': future_dates1, 'Predicted Expense': preds_f}
             future_df = pd.DataFrame(future_data)
 
